@@ -4,9 +4,10 @@
 import pandas as pd
 import string
 import random
-# import termcolor
 import os
+os.system('color')
 import logging
+from sty import bg, ef, fg, rs
 
 import nltk
 nltk.download('punkt')
@@ -15,6 +16,10 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+nltk.download('vader_lexicon')
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+nltk.download('wordnet')
+nltk.download('omw-1.4')
 
 # --------------------------------------------------------------------LOGGING SETUP--------------------------------------------------------------------------------#
 
@@ -32,27 +37,16 @@ file_handler.setFormatter(formatter)
 
 saLogger.addHandler(file_handler)
 
-# --------------------------------------------------------------SETTING EMOTION VALUES-----------------------------------------------------------------------------#
-
-# MUST be kept in so the colours display correctly in the console
-# os.system('color')
-
+# -------------------------------------------------------------------------IMPORTING DATA---------------------------------------------------------------------------#
 # load the files containing various positive & negative words
 poss = pd.read_csv('datasets/pos_sentiment.csv')
 negs = pd.read_csv('datasets/neg_sentiment.csv')
-poss.columns = ["text"]
-negs.columns = ["text"]
+poss.columns = ["text"] # positive sentiment data
+negs.columns = ["text"] # negative sentiment data
 
-# set a 'positive' or 'negative' label into each line of text data
-
-# ORIGINAL COLOURED CONSOLE OUTPUT USING TERMCOLOR - this will instead be handled in the GUI, so termcolor.colored is removed to keep the logging output tidy
-# ^^^
-#data=([(pos['text'], termcolor.colored("positive", "green")) for index, pos in poss.iterrows()]+
-#    [(neg['text'], termcolor.colored("negative", "red")) for index, neg in negs.iterrows()])
-
+# combine them all into one dataset
 data=([(pos['text'], "positive") for index, pos in poss.iterrows()]+
     [(neg['text'], "negative") for index, neg in negs.iterrows()])
-
 
 # test that it works by printing it
 # print(data[0:3])
@@ -100,12 +94,12 @@ random.shuffle(train)
 train_x=train[0:50]
 test_x=train[51:55] 
 
-# need to create 3 datasets (test_x, train_x & evaluate_x; with the final data, each dataset will have 30 items)
+# need to create 3 datasets (test_x, train_x & evaluate_x; each dataset has 30 items)
 
 # define an NLTK Naive Bayes model and train it with the train_x data
 model = nltk.NaiveBayesClassifier.train(train_x)
 
-# show the most informative features
+# show the model's most informative features
 # model.show_most_informative_features()
 
 # now, check the model's prediction accuracy with test_x data
@@ -117,8 +111,77 @@ tests=['poor', 'good', 'great', 'waste of time']
 
 # -------------------------------------------------------------------------OUTPUT-------------------------------------------------------------------------------#
 
+# create an intensity analyser so that polarity scores can be calculated
+sid = SentimentIntensityAnalyzer()
+
+polarityScores = []
+
+for t in tests:
+  polarityScores.append(str(sid.polarity_scores(t)))
+
+polarity = []
+
+for s in polarityScores:
+  polarity.append((s.partition("compound': ")[2]).strip("}"))
+
+# data = []
+
+print("original output: ")
 for test in tests:
 	t_features = {word: (word in word_tokenize(test.lower())) for word in tokens}
-	saLogger.info("%s : %s" % (test, model.classify(t_features)))
+	print("%s : %s" % (test, model.classify(t_features)))
+
+print()
+print("polarity output: ")
+for p in polarity:
+  if(float(p) >= -1 and float(p) <= -0.7):
+  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+  	print(fg(211, 0, 0) +model.classify(t_features) + fg.rs +": very positive")
+  elif(float(p) >= -0.7 and float(p) <= -0.3):
+  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+  	print(fg(255, 71, 71) +model.classify(t_features) + fg.rs +": positive")
+  elif(float(p) >= -0.3 and float(p) <= 0.3):
+  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+  	print(fg(255, 214, 32) +model.classify(t_features) + fg.rs +": neutral")
+  elif(float(p) >= 0.3 and float(p) <= 0.7):
+  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+  	print(fg(93, 228, 78) +model.classify(t_features) + fg.rs +": negative")
+  elif(float(p) >= 0.7 and float(p) <= 1.0):
+  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+  	print(fg(33, 142, 21) +model.classify(t_features) + fg.rs +": very negative")
+
+# ORIGINAL POLARITY COLOUR CODING CODE
+
+# create an intensity analyser so that polarity scores can be calculated
+# sid = SentimentIntensityAnalyzer()
+
+# polarityScores = []
+
+# for t in tests:
+#   polarityScores.append(str(sid.polarity_scores(t)))
+
+# sentiment = []
+
+# for s in polarityScores:
+#   sentiment.append((s.partition("compound': ")[2]).strip("}"))
+
+# # data = []
+
+# for s in sentiment:
+#   if(float(s) >= -1 and float(s) <= -0.7):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(211, 0, 0) +model.classify(t_features) + fg.rs +": very positive")
+#   elif(float(s) >= -0.7 and float(s) <= -0.3):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(255, 71, 71) +model.classify(t_features) + fg.rs +": positive")
+#   elif(float(s) >= -0.3 and float(s) <= 0.3):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(255, 214, 32) +model.classify(t_features) + fg.rs +": neutral")
+#   elif(float(s) >= 0.3 and float(s) <= 0.7):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(93, 228, 78) +model.classify(t_features) + fg.rs +": negative")
+#   elif(float(s) >= 0.7 and float(s) <= 1.0):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(33, 142, 21) +model.classify(t_features) + fg.rs +": very negative")
 
 # the saLogger can now be used to print any errors that may occur in the code (double check logic & add try/except statements where necessary!)
