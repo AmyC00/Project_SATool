@@ -84,6 +84,9 @@ train = [({word: (word in word_tokenize(x[0]))
 # test that it works by printing it
 # print(train[0])
 
+# NOTE: for now, only the test data is being used for output
+# this will need to be changed in the final product so that, once the algorithm has been trained/tested/evaluated, the analys is done on the ORIGINAL user data
+
 
 # ------------------------------------------------------TRAINING/TESTING/EVALUATING THE ALGORITHM-----------------------------------------------------------------#
 
@@ -120,6 +123,9 @@ for t in tests:
   polarityScores.append(str(sid.polarity_scores(t)))
 
 polarity = []
+
+# NOTE: for now, only the test data is being used for output
+# this will need to be changed in the final product so that, once the algorithm has been trained/tested/evaluated, the analys is done on the ORIGINAL user data
 
 for s in polarityScores:
   polarity.append((s.partition("compound': ")[2]).strip("}"))
