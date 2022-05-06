@@ -38,6 +38,7 @@ file_handler.setFormatter(formatter)
 saLogger.addHandler(file_handler)
 
 # -------------------------------------------------------------------------IMPORTING DATA---------------------------------------------------------------------------#
+
 # load the files containing various positive & negative words
 poss = pd.read_csv('datasets/pos_sentiment.csv')
 negs = pd.read_csv('datasets/neg_sentiment.csv')
@@ -67,26 +68,27 @@ for words in data:
 	no_punctuation.append(words[0].translate(translator)) 
 
 # next, tokenize the punctuation-less data & remove any stop words within it
-tokens=set(word.lower() for words in no_punctuation for word in word_tokenize(words[0]))
+tokens = set(word.lower() for words in data for word in word_tokenize(words[0]))
 no_stopwords = [word for word in tokens if not word in stopwords.words()]
 
-# create a blank array that will be used to store the lemmatized data
-final_data=[]
 
-# lemmatize the data to reduce each word to its stem
-for words in no_stopwords:
-	final_data.append(lemmatizer.lemmatize(words[0]))	
+# NOTE: lemmatization is causing the analysis results to come back wrong, indicating that all values are positive (shown in screenshots within dissertation)
+# commented out for now to prevent this from happening
+
+# # create a blank array that will be used to store the lemmatized data
+# final_data=[]
+
+# # lemmatize the data to reduce each word to its stem
+# for words in no_stopwords:
+# 	final_data.append(lemmatizer.lemmatize(words[0]))	
 
 # finally, create the necessary datasets using the prepared data
-train = [({word: (word in word_tokenize(x[0])) 
-            for word in final_data}, x[1]) for x in data]
+train = [({word: (word in word_tokenize(x[0])) \
+			for word in no_stopwords}, x[1]) for x in data]
+			
 
 # test that it works by printing it
 # print(train[0])
-
-# NOTE: for now, only the test data is being used for output
-# this will need to be changed in the final product so that, once the algorithm has been trained/tested/evaluated, the analys is done on the ORIGINAL user data
-
 
 # ------------------------------------------------------TRAINING/TESTING/EVALUATING THE ALGORITHM-----------------------------------------------------------------#
 
@@ -97,64 +99,87 @@ random.shuffle(train)
 train_x=train[0:50]
 test_x=train[51:55] 
 
-# need to create 3 datasets (test_x, train_x & evaluate_x; each dataset has 30 items)
-
 # define an NLTK Naive Bayes model and train it with the train_x data
 model = nltk.NaiveBayesClassifier.train(train_x)
-
-# show the model's most informative features
-# model.show_most_informative_features()
 
 # now, check the model's prediction accuracy with test_x data
 acc=nltk.classify.accuracy(model, test_x)
 saLogger.info("Accuracy: %s" % (acc))
-
-# predict the new test data with the trained model
-tests=['poor', 'good', 'great', 'waste of time']
 
 # -------------------------------------------------------------------------OUTPUT-------------------------------------------------------------------------------#
 
 # create an intensity analyser so that polarity scores can be calculated
 sid = SentimentIntensityAnalyzer()
 
-polarityScores = []
+# analyse text input by the user
+sentimentData=['great', 'terrible', 'excellent', 'awesome', 'bad']
 
-for t in tests:
-  polarityScores.append(str(sid.polarity_scores(t)))
+polarityScores = [] # full vader polarity data
+polarity = [] # individual compound polarity scores
 
-polarity = []
-
-# NOTE: for now, only the test data is being used for output
-# this will need to be changed in the final product so that, once the algorithm has been trained/tested/evaluated, the analys is done on the ORIGINAL user data
+for s in sentimentData:
+  polarityScores.append(str(sid.polarity_scores(s)))
 
 for s in polarityScores:
   polarity.append((s.partition("compound': ")[2]).strip("}"))
 
-# data = []
+finalData = [] # array of the text being analysed (sentimentData), and - for each item in the list - its compound vader polarity score (polarity)
 
-print("original output: ")
-for test in tests:
-	t_features = {word: (word in word_tokenize(test.lower())) for word in tokens}
-	print("%s : %s" % (test, model.classify(t_features)))
+index = 0
 
-print()
-print("polarity output: ")
 for p in polarity:
-  if(float(p) >= -1 and float(p) <= -0.7):
-  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
-  	print(fg(211, 0, 0) +model.classify(t_features) + fg.rs +": very positive")
-  elif(float(p) >= -0.7 and float(p) <= -0.3):
-  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
-  	print(fg(255, 71, 71) +model.classify(t_features) + fg.rs +": positive")
-  elif(float(p) >= -0.3 and float(p) <= 0.3):
-  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
-  	print(fg(255, 214, 32) +model.classify(t_features) + fg.rs +": neutral")
-  elif(float(p) >= 0.3 and float(p) <= 0.7):
-  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
-  	print(fg(93, 228, 78) +model.classify(t_features) + fg.rs +": negative")
-  elif(float(p) >= 0.7 and float(p) <= 1.0):
-  	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
-  	print(fg(33, 142, 21) +model.classify(t_features) + fg.rs +": very negative")
+	for s in sentimentData:
+		finalData.append(sentimentData[index])
+		break
+	finalData.append(float(p))
+	index = index + 1
+
+# print("original output: ")
+# for test in sentimentData:
+# 	t_features = {word: (word in word_tokenize(test.lower())) for word in tokens}
+# 	print("%s : %s" % (test, model.classify(t_features)))
+
+def polarityColour(f):
+  if(f >= -1 and f <= -0.7):
+    print(fg(211, 0, 0) +"very negative" + fg.rs)
+  elif(f >= -0.7 and f <= -0.3):
+    print(fg(255, 71, 71) +"negative" + fg.rs)
+  elif(f >= -0.3 and f <= 0.3):
+    print(fg(255, 214, 32) +"neutral" + fg.rs)
+  elif(f >= 0.3 and f <= 0.7):
+    print(fg(93, 228, 78) +"positive" + fg.rs)
+  elif(f >= 0.7 and f <= 1.0):
+    print(fg(33, 142, 21) +"very positive" + fg.rs)
+
+for f in finalData:
+	if(isinstance(f, str)):
+		print(f)
+	elif(isinstance(f, float)):
+		polarityColour(f)
+		print()
+
+
+
+
+
+# print()
+# print("polarity output: ")
+# for p in polarity:
+#   if(float(p) >= -1 and float(p) <= -0.7):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(211, 0, 0) +model.classify(t_features) + fg.rs +": very positive")
+#   elif(float(p) >= -0.7 and float(p) <= -0.3):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(255, 71, 71) +model.classify(t_features) + fg.rs +": positive")
+#   elif(float(p) >= -0.3 and float(p) <= 0.3):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(255, 214, 32) +model.classify(t_features) + fg.rs +": neutral")
+#   elif(float(p) >= 0.3 and float(p) <= 0.7):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(93, 228, 78) +model.classify(t_features) + fg.rs +": negative")
+#   elif(float(p) >= 0.7 and float(p) <= 1.0):
+#   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
+#   	print(fg(33, 142, 21) +model.classify(t_features) + fg.rs +": very negative")
 
 # ORIGINAL POLARITY COLOUR CODING CODE
 
@@ -163,7 +188,7 @@ for p in polarity:
 
 # polarityScores = []
 
-# for t in tests:
+# for t in userInput:
 #   polarityScores.append(str(sid.polarity_scores(t)))
 
 # sentiment = []
@@ -189,5 +214,3 @@ for p in polarity:
 #   elif(float(s) >= 0.7 and float(s) <= 1.0):
 #   	t_features = {word: (word in word_tokenize(s.lower())) for word in tokens}
 #   	print(fg(33, 142, 21) +model.classify(t_features) + fg.rs +": very negative")
-
-# the saLogger can now be used to print any errors that may occur in the code (double check logic & add try/except statements where necessary!)

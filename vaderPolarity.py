@@ -20,6 +20,7 @@ sentimentData = ["This was the best movie I've ever seen, amazing!", "This was a
 # cPolarityScores = str(sid.polarity_scores(c))
 
 polarityScores = []
+polarity = []
 
 for s in sentimentData:
   polarityScores.append(str(sid.polarity_scores(s)))
@@ -29,10 +30,8 @@ for s in sentimentData:
 # bSentiment = (bPolarityScores.partition("compound': ")[2]).strip("}")
 # cSentiment = (cPolarityScores.partition("compound': ")[2]).strip("}")
 
-sentiment = []
-
 for s in polarityScores:
-  sentiment.append((s.partition("compound': ")[2]).strip("}"))
+  polarity.append((s.partition("compound': ")[2]).strip("}"))
 
 # PSEUDOCODE
 # for each item in the sentimentList
@@ -59,23 +58,23 @@ for s in polarityScores:
 #   elif(float(s) >= 0.7 and float(s) <= 1.0):
 #   	print(fg(33, 142, 21) +s +": very positive" + fg.rs)
 
-data = []
+# data = []
 
-for s in sentiment:
+for s in polarity:
   if(float(s) >= -1 and float(s) <= -0.7):
-    data.append(fg(211, 0, 0) +s +": very negative" + fg.rs)
+    print(fg(211, 0, 0) +s +": very negative" + fg.rs)
   elif(float(s) >= -0.7 and float(s) <= -0.3):
-    data.append(fg(255, 71, 71) +s +": negative" + fg.rs)
+    print(fg(255, 71, 71) +s +": negative" + fg.rs)
   elif(float(s) >= -0.3 and float(s) <= 0.3):
-    data.append(fg(255, 214, 32) +s +": neutral" + fg.rs)
+    print(fg(255, 214, 32) +s +": neutral" + fg.rs)
   elif(float(s) >= 0.3 and float(s) <= 0.7):
-    data.append(fg(93, 228, 78) +s +": positive" + fg.rs)
+    print(fg(93, 228, 78) +s +": positive" + fg.rs)
   elif(float(s) >= 0.7 and float(s) <= 1.0):
-    data.append(fg(33, 142, 21) +s +": very positive" + fg.rs)
+    print(fg(33, 142, 21) +s +": very positive" + fg.rs)
 
 # print("polarity of statement a: " +aSentiment)
 # print("polarity of statement b: " +bSentiment)
 # print("polarity of statement c: " +cSentiment)
 
-for d in data:
-  print(d)
+# for d in data:
+#   print(d)
