@@ -1,6 +1,8 @@
 # import the required libraries
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QWidget, QLabel
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QMovie
 from resultsWindow import Ui_resultsWindow
 import pandas as pd
 import string
@@ -9,6 +11,7 @@ import os
 os.system('color')
 import logging
 from sty import bg, ef, fg, rs
+import sys
 
 import nltk
 nltk.download('punkt')
@@ -37,6 +40,35 @@ file_handler = logging.FileHandler('sa.log')
 file_handler.setFormatter(formatter)
 
 saLogger.addHandler(file_handler)
+
+# -----------------------------------------------------------------LOADING SCREEN---------------------------------------------------------------------------#
+
+class LoadingScreen(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setFixedSize(300, 200)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.setWindowTitle("Analysing...")
+
+        self.label_animation = QLabel(self)
+
+        self.movie = QMovie('loading.gif')
+        self.label_animation.setAlignment(Qt.AlignCenter)
+        self.label_animation.setMovie(self.movie)
+
+        timer = QTimer(self)
+
+        self.startAnimation()
+        timer.singleShot(300, self.stopAnimation)
+
+        self.show()
+
+    def startAnimation(self):
+        self.movie.start()
+
+    def stopAnimation(self):
+        self.movie.stop()
+        self.close()
 
 # ----------------------------------------------------------------------HOME WINDOW--------------------------------------------------------------------------------#
 
@@ -126,6 +158,7 @@ class Ui_homeWindow(object):
 
     # analyse the text the user has entered
     def analyseData(self):
+        
         textToAnalyse = self.home_TextToAnalyse.toPlainText();
         # saLogger.info("Text being analysed: " +textToAnalyse);
         # saLogger.info(type(textToAnalyse))
@@ -137,7 +170,8 @@ class Ui_homeWindow(object):
             saLogger.warning("WARNING - no text has been entered for analysis.")
         else:
             # continue as normal
-    
+            self.loading_screen = LoadingScreen()
+
             # -------------------------------------------------------------------------IMPORTING DATA---------------------------------------------------------------------------#
 
             # load the files containing various positive & negative words
@@ -266,7 +300,6 @@ class Ui_homeWindow(object):
                     elif(f >= 0.7 and f <= 1.0):
                         item.setBackground(QtGui.QColor(33, 142, 21))
                         item.setForeground(QtGui.QColor("white"))
-
             # show the results window
             self.window.show()
 
