@@ -202,18 +202,6 @@ class Ui_homeWindow(object):
             finalData.append(float(p))
             index = index + 1
 
-        def polarityColour(f):
-            if(f >= -1 and f <= -0.7):
-                saLogger.info("very negative")
-            elif(f >= -0.7 and f <= -0.3):
-                saLogger.info("negative")
-            elif(f >= -0.3 and f <= 0.3):
-                saLogger.info("neutral")
-            elif(f >= 0.3 and f <= 0.7):
-                saLogger.info("positive")
-            elif(f >= 0.7 and f <= 1.0):
-                saLogger.info("very positive")
-
         # for f in finalData:
         #     if(isinstance(f, str)):
         #         saLogger.info(f)
@@ -226,12 +214,56 @@ class Ui_homeWindow(object):
         self.ui = Ui_resultsWindow()
         self.ui.setupUi(self.window)
 
+        # re-initialize index to zero so it can be used to display colours for the items in the list box
+        index = 0
+
+        # def polarityColour(f):
+        #     if(f >= -1 and f <= -0.7):
+        #         return(211, 0, 0)
+        #     elif(f >= -0.7 and f <= -0.3):
+        #         return(255, 71, 71)
+        #     elif(f >= -0.3 and f <= 0.3):
+        #         return(255, 214, 32)
+        #     elif(f >= 0.3 and f <= 0.7):
+        #         return(93, 228, 78)
+        #     elif(f >= 0.7 and f <= 1.0):
+        #         return(33, 142, 21)
+
         # pass data to the results window
         for f in finalData:
             if(isinstance(f, str)):
                 self.ui.results_AnalysisResults.addItem(f)
-            # elif(isinstance(f, float)):
-            #     saLogger.info("")
+                index = index + 1
+            elif(isinstance(f, float)):
+                item = self.ui.results_AnalysisResults.item(index-1)
+                if(f >= -1 and f <= -0.7):
+                    item.setBackground(QtGui.QColor(211, 0, 0))
+                    item.setForeground(QtGui.QColor("white"))
+                elif(f >= -0.7 and f <= -0.3):
+                    item.setBackground(QtGui.QColor(255, 71, 71))
+                elif(f >= -0.3 and f <= 0.3):
+                    item.setBackground(QtGui.QColor(255, 214, 32))
+                elif(f >= 0.3 and f <= 0.7):
+                    item.setBackground(QtGui.QColor(93, 228, 78))
+                elif(f >= 0.7 and f <= 1.0):
+                    item.setBackground(QtGui.QColor(33, 142, 21))
+                    item.setForeground(QtGui.QColor("white"))
+
+        
+
+        # item.setBackground(QtGui.QColor.setRgb(polarityColour(f)))
+
+        # def polarityColour(f):
+        #     if(f >= -1 and f <= -0.7):
+        #         saLogger.info("very negative")
+        #     elif(f >= -0.7 and f <= -0.3):
+        #         saLogger.info("negative")
+        #     elif(f >= -0.3 and f <= 0.3):
+        #         saLogger.info("neutral")
+        #     elif(f >= 0.3 and f <= 0.7):
+        #         saLogger.info("positive")
+        #     elif(f >= 0.7 and f <= 1.0):
+        #         saLogger.info("very positive")
 
         # show the results window
         self.window.show()
