@@ -13,20 +13,19 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_homeWindow(object):
     def setupUi(self, homeWindow):
-        super(Ui_homeWindow, self).__init__()
         homeWindow.setObjectName("homeWindow")
         homeWindow.resize(800, 618)
         self.centralwidget = QtWidgets.QWidget(homeWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.home_InfoLabel = QtWidgets.QLabel(self.centralwidget)
-        self.home_InfoLabel.setGeometry(QtCore.QRect(120, 30, 531, 31))
+        self.home_InfoLabel.setGeometry(QtCore.QRect(120, 20, 531, 31))
         font = QtGui.QFont()
         font.setPointSize(15)
         self.home_InfoLabel.setFont(font)
         self.home_InfoLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.home_InfoLabel.setObjectName("home_InfoLabel")
         self.home_TextToAnalyse = QtWidgets.QTextEdit(self.centralwidget)
-        self.home_TextToAnalyse.setGeometry(QtCore.QRect(60, 80, 681, 371))
+        self.home_TextToAnalyse.setGeometry(QtCore.QRect(60, 90, 681, 371))
         self.home_TextToAnalyse.setObjectName("home_TextToAnalyse")
         self.home_AnalyseTextBtn = QtWidgets.QPushButton(self.centralwidget)
         self.home_AnalyseTextBtn.setGeometry(QtCore.QRect(320, 480, 141, 41))
@@ -40,6 +39,13 @@ class Ui_homeWindow(object):
         font.setPointSize(12)
         self.home_OpenFileBtn.setFont(font)
         self.home_OpenFileBtn.setObjectName("home_OpenFileBtn")
+        self.home_InfoLabel_2 = QtWidgets.QLabel(self.centralwidget)
+        self.home_InfoLabel_2.setGeometry(QtCore.QRect(120, 50, 531, 31))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.home_InfoLabel_2.setFont(font)
+        self.home_InfoLabel_2.setAlignment(QtCore.Qt.AlignCenter)
+        self.home_InfoLabel_2.setObjectName("home_InfoLabel_2")
         homeWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(homeWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 25))
@@ -60,6 +66,8 @@ class Ui_homeWindow(object):
         self.home_AnalyseTextBtn.setText(_translate("homeWindow", "Analyse text"))
         self.home_OpenFileBtn.setToolTip(_translate("homeWindow", "Open a text file to analyse its contents."))
         self.home_OpenFileBtn.setText(_translate("homeWindow", "Open a file"))
+        self.home_InfoLabel_2.setText(_translate("homeWindow", "NOTE: each sentence must be on its own line."))
+
 
 if __name__ == "__main__":
     import sys

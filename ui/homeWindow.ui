@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>120</x>
-      <y>30</y>
+      <y>20</y>
       <width>531</width>
       <height>31</height>
      </rect>
@@ -39,7 +39,7 @@
     <property name="geometry">
      <rect>
       <x>60</x>
-      <y>80</y>
+      <y>90</y>
       <width>681</width>
       <height>371</height>
      </rect>
@@ -85,6 +85,27 @@
     </property>
     <property name="text">
      <string>Open a file</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="home_InfoLabel_2">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>50</y>
+      <width>531</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>NOTE: each sentence must be on its own line.</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

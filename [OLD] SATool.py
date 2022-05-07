@@ -1,6 +1,5 @@
 # import the required libraries
 from PyQt5 import QtCore, QtGui, QtWidgets
-from resultsWindow import Ui_resultsWindow
 import pandas as pd
 import string
 import random
@@ -40,46 +39,54 @@ saLogger.addHandler(file_handler)
 # ----------------------------------------------------------------------HOME WINDOW--------------------------------------------------------------------------------#
 
 class Ui_homeWindow(object):
-    
     def setupUi(self, homeWindow):
+        super(Ui_homeWindow, self).__init__()
         homeWindow.setObjectName("homeWindow")
         homeWindow.resize(800, 618)
         self.centralwidget = QtWidgets.QWidget(homeWindow)
         self.centralwidget.setObjectName("centralwidget")
+
         self.home_InfoLabel = QtWidgets.QLabel(self.centralwidget)
-        self.home_InfoLabel.setGeometry(QtCore.QRect(120, 20, 531, 31))
+        self.home_InfoLabel.setGeometry(QtCore.QRect(120, 30, 531, 31))
         font = QtGui.QFont()
         font.setPointSize(15)
         self.home_InfoLabel.setFont(font)
         self.home_InfoLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.home_InfoLabel.setObjectName("home_InfoLabel")
+        self.home_InfoLabel.setObjectName("home_LinesLabel")
+
+        self.home_LinesLabel = QtWidgets.QLabel(self.centralwidget)
+        self.home_LinesLabel.setGeometry(QtCore.QRect(120, 60, 531, 31))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.home_LinesLabel.setFont(font)
+        self.home_LinesLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.home_LinesLabel.setObjectName("home_LinesLabel")
+
         self.home_TextToAnalyse = QtWidgets.QTextEdit(self.centralwidget)
-        self.home_TextToAnalyse.setGeometry(QtCore.QRect(60, 90, 681, 371))
+        self.home_TextToAnalyse.setGeometry(QtCore.QRect(60, 100, 681, 371))
         self.home_TextToAnalyse.setObjectName("home_TextToAnalyse")
-        self.home_AnalyseTextBtn = QtWidgets.QPushButton(self.centralwidget, clicked = lambda: self.analyseData())
-        self.home_AnalyseTextBtn.setGeometry(QtCore.QRect(320, 480, 141, 41))
+
+        self.home_AnalyseTextBtn = QtWidgets.QPushButton(self.centralwidget)
+        self.home_AnalyseTextBtn.setGeometry(QtCore.QRect(320, 500, 141, 41))
+        self.home_AnalyseTextBtn.clicked.connect(self.analyseData)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.home_AnalyseTextBtn.setFont(font)
         self.home_AnalyseTextBtn.setObjectName("home_AnalyseTextBtn")
+
         self.home_OpenFileBtn = QtWidgets.QPushButton(self.centralwidget)
-        self.home_OpenFileBtn.setGeometry(QtCore.QRect(320, 530, 141, 41))
+        self.home_OpenFileBtn.setGeometry(QtCore.QRect(320, 550, 141, 41))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.home_OpenFileBtn.setFont(font)
         self.home_OpenFileBtn.setObjectName("home_OpenFileBtn")
-        self.home_InfoLabel_2 = QtWidgets.QLabel(self.centralwidget)
-        self.home_InfoLabel_2.setGeometry(QtCore.QRect(120, 50, 531, 31))
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.home_InfoLabel_2.setFont(font)
-        self.home_InfoLabel_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.home_InfoLabel_2.setObjectName("home_InfoLabel_2")
+
         homeWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(homeWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 25))
         self.menubar.setObjectName("menubar")
         homeWindow.setMenuBar(self.menubar)
+        
         self.statusbar = QtWidgets.QStatusBar(homeWindow)
         self.statusbar.setObjectName("statusbar")
         homeWindow.setStatusBar(self.statusbar)
@@ -91,11 +98,11 @@ class Ui_homeWindow(object):
         _translate = QtCore.QCoreApplication.translate
         homeWindow.setWindowTitle(_translate("homeWindow", "Home"))
         self.home_InfoLabel.setText(_translate("homeWindow", "Enter the text you want to analyse below:"))
+        self.home_LinesLabel.setText(_translate("homeWindow", "NOTE: Each sentence must be on its own line."))
         self.home_AnalyseTextBtn.setToolTip(_translate("homeWindow", "Analyse the text entered into the text box."))
         self.home_AnalyseTextBtn.setText(_translate("homeWindow", "Analyse text"))
         self.home_OpenFileBtn.setToolTip(_translate("homeWindow", "Open a text file to analyse its contents."))
         self.home_OpenFileBtn.setText(_translate("homeWindow", "Open a file"))
-        self.home_InfoLabel_2.setText(_translate("homeWindow", "NOTE: each sentence must be on its own line."))
 
     def analyseData(self):
         textToAnalyse = self.home_TextToAnalyse.toPlainText();
@@ -180,7 +187,9 @@ class Ui_homeWindow(object):
         # here, split each sentence entered by the user and put it into an array (split at each new line)
 
         sentimentData = textToAnalyse.split('\n')
-        # saLogger.info(sentimentData)
+        saLogger.info(sentimentData)
+
+        # sentimentData=['great', 'terrible', 'excellent', 'awesome', 'bad']
 
         polarityScores = [] # full vader polarity data
         polarity = [] # individual compound polarity scores
@@ -214,29 +223,12 @@ class Ui_homeWindow(object):
             elif(f >= 0.7 and f <= 1.0):
                 saLogger.info("very positive")
 
-        # for f in finalData:
-        #     if(isinstance(f, str)):
-        #         saLogger.info(f)
-        #     elif(isinstance(f, float)):
-        #         polarityColour(f)
-        #         saLogger.info("")
-
-        # declare an instance of the results window
-        self.window = QtWidgets.QMainWindow()
-        self.ui = Ui_resultsWindow()
-        self.ui.setupUi(self.window)
-
-        # pass data to the results window
         for f in finalData:
             if(isinstance(f, str)):
-                self.ui.results_AnalysisResults.addItem(f)
-            # elif(isinstance(f, float)):
-            #     saLogger.info("")
-
-        # show the results window
-        self.window.show()
-
-
+                saLogger.info(f)
+            elif(isinstance(f, float)):
+                polarityColour(f)
+                saLogger.info("")
 
 if __name__ == "__main__":
     import sys
