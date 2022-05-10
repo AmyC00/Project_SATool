@@ -185,16 +185,16 @@ class Ui_homeWindow(QMainWindow):
 
             # load the files containing various positive & negative words
             poss = pd.read_csv('datasets/pos_sentiment.csv')
+            neus = pd.read_csv('datasets/neu_sentiment.csv')
             negs = pd.read_csv('datasets/neg_sentiment.csv')
             poss.columns = ["text"] # positive sentiment data
+            neus.columns = ["text"] # neutral sentiment data
             negs.columns = ["text"] # negative sentiment data
 
             # combine them all into one dataset
             data=([(pos['text'], "positive") for index, pos in poss.iterrows()]+
+                [(neu['text'], "neutral") for index, neu in neus.iterrows()]+
                 [(neg['text'], "negative") for index, neg in negs.iterrows()])
-
-            # test that it works by printing it
-            # print(data[0:3])
 
             # ----------------------------------------------------------TOKENIZING/STEMMING/LEMMATIZATION----------------------------------------------------------------------#
 
@@ -230,7 +230,6 @@ class Ui_homeWindow(QMainWindow):
             train = [({word: (word in word_tokenize(x[0])) \
                         for word in no_stopwords}, x[1]) for x in data]
                         
-
             # test that it works by printing it
             # print(train[0])
 
