@@ -303,6 +303,48 @@ class Ui_homeWindow(object):
             # show the results window
             self.window.show()
 
+            def displayResults():
+                currentText = self.ui.results_AnalysisResults.currentItem().text()
+
+                polarityIndex = 0
+                emotion = ""
+                
+                for index, f in enumerate(finalData):
+                    if(isinstance(f, str)):
+                        if(f == currentText):
+                            polarityIndex = index + 1 # get its corresponding polarity value 
+                    elif(isinstance(f, float)):
+                        if(polarityIndex == 0):
+                            pass
+                        elif(polarityIndex == index):
+                            self.ui.results_ResultsBreakdown.setStyleSheet("font-weight:bold; font-size:30px")
+                            explanation = "This text is: \n"
+
+                            if(f >= -1 and f <= -0.7):
+                                emotion = "very negative"
+                            elif(f >= -0.7 and f <= -0.3):
+                                emotion = "negative"
+                            elif(f >= -0.3 and f <= 0.3):
+                                emotion = "neutral"
+                            elif(f >= 0.3 and f <= 0.7):
+                                emotion = "positive"
+                            elif(f >= 0.7 and f <= 1.0):
+                                emotion = "very positive"
+
+                output = explanation + emotion
+                self.ui.results_ResultsBreakdown.setText(output)
+
+            self.ui.results_AnalysisResults.setCurrentRow(2)
+            self.ui.results_AnalysisResults.currentRowChanged.connect(displayResults)
+
+
+            # GETS TEXT OF CURRENTLY SELECTED ITEM & PRINTS IT TO CONSOLE
+            # self.ui.results_AnalysisResults.setCurrentRow(2)
+            # self.ui.results_AnalysisResults.currentRowChanged.connect(lambda: print(self.ui.results_AnalysisResults.currentItem().text()))
+
+            # GETS INDEX OF CURRENT SELECTED ITEM & PRINTS IT TO CONSOLE
+            # index = self.ui.results_AnalysisResults.currentRow()
+            # print(str(index))
 
 
 if __name__ == "__main__":
