@@ -2,7 +2,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QFileDialog, QApplication, QWidget, QLabel
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QMovie
+from PyQt5.QtGui import QMovie, QIcon
 from resultsWindow import Ui_resultsWindow
 import pandas as pd
 import string
@@ -33,7 +33,6 @@ nltk.download('omw-1.4')
 saLogger = logging.getLogger(__name__)
 saLogger.setLevel(logging.INFO)
 
-# add the log formatting to the HANDLER, not the logger itself (much tidier!)
 formatter = logging.Formatter('%(levelname)s: %(name)s: %(message)s')
 
 file_handler = logging.FileHandler('sa.log')
@@ -43,6 +42,7 @@ saLogger.addHandler(file_handler)
 
 # -----------------------------------------------------------------LOADING SCREEN---------------------------------------------------------------------------#
 
+# create a loading screen that appears when the analysis is being carried out
 class LoadingScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -64,6 +64,7 @@ class LoadingScreen(QWidget):
         self.show()
 
     def startAnimation(self):
+        saLogger.info("Analysing text...")
         self.movie.start()
 
     def stopAnimation(self):
@@ -72,13 +73,15 @@ class LoadingScreen(QWidget):
 
 # ----------------------------------------------------------------------HOME WINDOW--------------------------------------------------------------------------------#
 
-class Ui_homeWindow(object):
+class Ui_homeWindow(QMainWindow):
     
     def setupUi(self, homeWindow):
         homeWindow.setObjectName("homeWindow")
         homeWindow.resize(800, 618)
+        self.setWindowIcon(QtGui.QIcon('icon.jpg'))
         self.centralwidget = QtWidgets.QWidget(homeWindow)
         self.centralwidget.setObjectName("centralwidget")
+
         self.home_InfoLabel = QtWidgets.QLabel(self.centralwidget)
         self.home_InfoLabel.setGeometry(QtCore.QRect(120, 20, 531, 31))
         font = QtGui.QFont()
@@ -86,24 +89,31 @@ class Ui_homeWindow(object):
         self.home_InfoLabel.setFont(font)
         self.home_InfoLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.home_InfoLabel.setObjectName("home_InfoLabel")
+        
+        # text box where user can enter text to be analysed
         self.home_TextToAnalyse = QtWidgets.QTextEdit(self.centralwidget)
         self.home_TextToAnalyse.setGeometry(QtCore.QRect(60, 90, 681, 371))
         font = QtGui.QFont()
         font.setPointSize(13)
         self.home_TextToAnalyse.setFont(font)
         self.home_TextToAnalyse.setObjectName("home_TextToAnalyse")
+
+        # button the user can click to start the sentiment analysis
         self.home_AnalyseTextBtn = QtWidgets.QPushButton(self.centralwidget, clicked = lambda: self.analyseData())
         self.home_AnalyseTextBtn.setGeometry(QtCore.QRect(320, 480, 141, 41))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.home_AnalyseTextBtn.setFont(font)
         self.home_AnalyseTextBtn.setObjectName("home_AnalyseTextBtn")
+
+        # button the user can click to open a text file & analyse its contents
         self.home_OpenFileBtn = QtWidgets.QPushButton(self.centralwidget, clicked = lambda: self.openFile())
         self.home_OpenFileBtn.setGeometry(QtCore.QRect(320, 530, 141, 41))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.home_OpenFileBtn.setFont(font)
         self.home_OpenFileBtn.setObjectName("home_OpenFileBtn")
+
         self.home_InfoLabel_2 = QtWidgets.QLabel(self.centralwidget)
         self.home_InfoLabel_2.setGeometry(QtCore.QRect(120, 50, 531, 31))
         font = QtGui.QFont()
@@ -111,6 +121,7 @@ class Ui_homeWindow(object):
         self.home_InfoLabel_2.setFont(font)
         self.home_InfoLabel_2.setAlignment(QtCore.Qt.AlignCenter)
         self.home_InfoLabel_2.setObjectName("home_InfoLabel_2")
+
         homeWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(homeWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 25))
@@ -133,6 +144,7 @@ class Ui_homeWindow(object):
         self.home_OpenFileBtn.setText(_translate("homeWindow", "Open a file"))
         self.home_InfoLabel_2.setText(_translate("homeWindow", "NOTE: each sentence must be on its own line."))
 
+    # display a warning if the user tries to start the analysis with no text in the text box
     def showEmptyTextFieldWarning(self):
         msg = QMessageBox()
         msg.setWindowTitle("No text entered for analysis")
@@ -141,8 +153,11 @@ class Ui_homeWindow(object):
         msg.setDefaultButton(QMessageBox.Ok)
         x = msg.exec_()
 
+    # open an existing text file and enter its contents into the text box for analysis
     def openFile(self):
         fileName = QFileDialog.getOpenFileName(None, "Open a file", "", "Text files (*.txt);;All files (*)" )
+
+        saLogger.info("Opened file: " +fileName[0])
 
         # output filename to screen
         if fileName[0]:
@@ -152,24 +167,18 @@ class Ui_homeWindow(object):
                 data = f.read()
                 self.home_TextToAnalyse.setText(data)
 
-            # self.home_TextToAnalyse.setText(fileName[0])
-            # saLogger.info("Chosen file: " +fileName[0])
-
-
     # analyse the text the user has entered
     def analyseData(self):
-        
         textToAnalyse = self.home_TextToAnalyse.toPlainText();
-        # saLogger.info("Text being analysed: " +textToAnalyse);
-        # saLogger.info(type(textToAnalyse))
 
         if(textToAnalyse == ""):
-            # if there is no text in the text box, tell this to the user
+            # if there is no text in the text box, convey this to the user
             # there MUST be text present for the analysis to be carried out
             self.showEmptyTextFieldWarning()
             saLogger.warning("WARNING - no text has been entered for analysis.")
         else:
             # continue as normal
+            saLogger.info("Text being analysed: " +textToAnalyse)
             self.loading_screen = LoadingScreen()
 
             # -------------------------------------------------------------------------IMPORTING DATA---------------------------------------------------------------------------#
@@ -229,8 +238,6 @@ class Ui_homeWindow(object):
 
             # shuffle the data and split it into a new testing dataset
             random.shuffle(train)
-            # len(train)
-            # 55
             train_x=train[0:50]
             test_x=train[51:55] 
 
@@ -239,32 +246,36 @@ class Ui_homeWindow(object):
 
             # now, check the model's prediction accuracy with test_x data
             acc=nltk.classify.accuracy(model, test_x)
-            # saLogger.info("Accuracy: %s" % (acc))
 
             # -------------------------------------------------------------------------OUTPUT-------------------------------------------------------------------------------#
 
             # create an intensity analyser so that polarity scores can be calculated
             sid = SentimentIntensityAnalyzer()
 
-            # analyse text input by the user
-            # here, split each sentence entered by the user and put it into an array (split at each new line)
-
             sentimentData = textToAnalyse.split('\n')
-            # saLogger.info(sentimentData)
 
             polarityScores = [] # full vader polarity data
             polarity = [] # individual compound polarity scores
 
+            # calculate the polarity scores of the text data
             for s in sentimentData:
                 polarityScores.append(str(sid.polarity_scores(s)))
 
+            # extract JUST the compound polarity value for use later on
             for s in polarityScores:
                 polarity.append((s.partition("compound': ")[2]).strip("}"))
 
-            finalData = [] # array of the text being analysed (sentimentData), and - for each item in the list - its compound vader polarity score (polarity)
+            saLogger.info("Polarity values: ")
+            for p in polarity:
+                saLogger.info(p)
 
-            index = 0
+            # create an aggregated list of both the text being analysed and the polarity scores
+            finalData = [] 
 
+            # used to display items correctly/with correct colour coding based on emotion
+            index = 0 
+
+            # store the text being analysed & the polarity scores in the array
             for p in polarity:
                 for s in sentimentData:
                     finalData.append(sentimentData[index])
@@ -272,7 +283,7 @@ class Ui_homeWindow(object):
                 finalData.append(float(p))
                 index = index + 1
 
-            # declare an instance of the results window
+            # declare an instance of the results window so the analysis results can be shown on screen
             self.window = QtWidgets.QMainWindow()
             self.ui = Ui_resultsWindow()
             self.ui.setupUi(self.window)
@@ -280,34 +291,43 @@ class Ui_homeWindow(object):
             # re-initialize index to zero so it can be used to display colours for the items in the list box
             index = 0
 
-            # pass data to the results window
+            # pass data to the results window so it can be displayed
             for f in finalData:
                 if(isinstance(f, str)):
                     self.ui.results_AnalysisResults.addItem(f)
                     index = index + 1
                 elif(isinstance(f, float)):
                     item = self.ui.results_AnalysisResults.item(index-1)
+                    # very negative
                     if(f >= -1 and f <= -0.7):
                         item.setBackground(QtGui.QColor(211, 0, 0))
                         item.setForeground(QtGui.QColor("white"))
+                    # negative
                     elif(f >= -0.7 and f <= -0.3):
                         item.setBackground(QtGui.QColor(255, 71, 71))
                         item.setForeground(QtGui.QColor("white"))
+                    # neutral
                     elif(f >= -0.3 and f <= 0.3):
                         item.setBackground(QtGui.QColor(255, 214, 32))
+                    # positive
                     elif(f >= 0.3 and f <= 0.7):
                         item.setBackground(QtGui.QColor(93, 228, 78))
+                    # very positive
                     elif(f >= 0.7 and f <= 1.0):
                         item.setBackground(QtGui.QColor(33, 142, 21))
                         item.setForeground(QtGui.QColor("white"))
+
             # show the results window
             self.window.show()
 
+            # display the emotion of a given item in the list when the user clicks on it
             def displayResults():
+                # get the item in the list of results that the user has clicked on
                 currentText = self.ui.results_AnalysisResults.currentItem().text()
+                saLogger.info("Item selected: " +currentText)
 
-                polarityIndex = 0
-                emotion = ""
+                polarityIndex = 0 # the selected item's polarity data (based on its index in the finalData array)
+                emotion = "" # the category of emotion a given piece of text is in
                 
                 for index, f in enumerate(finalData):
                     if(isinstance(f, str)):
@@ -320,6 +340,7 @@ class Ui_homeWindow(object):
                             self.ui.results_ResultsBreakdown.setStyleSheet("font-weight:bold; font-size:30px")
                             explanation = "This text is: \n"
 
+                            # append text to the label based on its level of emotion
                             if(f >= -1 and f <= -0.7):
                                 emotion = "very negative"
                             elif(f >= -0.7 and f <= -0.3):
@@ -331,20 +352,12 @@ class Ui_homeWindow(object):
                             elif(f >= 0.7 and f <= 1.0):
                                 emotion = "very positive"
 
+                # display the results in the left pane when the user clicks on a list item
                 output = explanation + emotion
                 self.ui.results_ResultsBreakdown.setText(output)
 
             self.ui.results_AnalysisResults.setCurrentRow(2)
             self.ui.results_AnalysisResults.currentRowChanged.connect(displayResults)
-
-
-            # GETS TEXT OF CURRENTLY SELECTED ITEM & PRINTS IT TO CONSOLE
-            # self.ui.results_AnalysisResults.setCurrentRow(2)
-            # self.ui.results_AnalysisResults.currentRowChanged.connect(lambda: print(self.ui.results_AnalysisResults.currentItem().text()))
-
-            # GETS INDEX OF CURRENT SELECTED ITEM & PRINTS IT TO CONSOLE
-            # index = self.ui.results_AnalysisResults.currentRow()
-            # print(str(index))
 
 
 if __name__ == "__main__":
