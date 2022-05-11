@@ -153,6 +153,16 @@ class Ui_homeWindow(QMainWindow):
         msg.setDefaultButton(QMessageBox.Ok)
         x = msg.exec_()
 
+    # display a warning if the user tries to analyse text greater than 500 words in length
+    def showTextLengthWarning(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("Text entered is too long")
+        msg.setText("The text being analysed is too long!")
+        msg.setInformativeText("Enter some text that is shorter than 500 words and try again.")
+        msg.setIcon(QMessageBox.Warning)
+        msg.setDefaultButton(QMessageBox.Ok)
+        x = msg.exec_()
+
     # open an existing text file and enter its contents into the text box for analysis
     def openFile(self):
         fileName = QFileDialog.getOpenFileName(None, "Open a file", "", "Text files (*.txt);;All files (*)" )
@@ -171,14 +181,24 @@ class Ui_homeWindow(QMainWindow):
     def analyseData(self):
         textToAnalyse = self.home_TextToAnalyse.toPlainText();
 
+        # get length of entered text in words
+        word_list = textToAnalyse.split()
+        number_of_words = len(word_list)
+
         if(textToAnalyse == ""):
             # if there is no text in the text box, convey this to the user
             # there MUST be text present for the analysis to be carried out
             self.showEmptyTextFieldWarning()
             saLogger.warning("WARNING - no text has been entered for analysis.")
+        # implementing word limit; only allow the operation to proceed if the text is under 500 characters in length
+        elif(number_of_words > 500):
+            self.showTextLengthWarning()
+            saLogger.warning("WARNING - text entered for analysis is over 500 words.")
+            saLogger.info("Length of text being analysed: " +str(number_of_words) +" words")
         else:
             # continue as normal
             saLogger.info("Text being analysed: " +textToAnalyse)
+            saLogger.info("Length of text being analysed: " +str(number_of_words) +" words")
             self.loading_screen = LoadingScreen()
 
             # -------------------------------------------------------------------------IMPORTING DATA---------------------------------------------------------------------------#
